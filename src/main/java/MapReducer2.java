@@ -47,11 +47,11 @@ public class MapReducer2 {
                 else if (index == 3) {
                     if (isStar){
                         countFirst = Integer.parseInt(temp);
-                        context.write(new WordAndCounter(firstWord, "*", countFirst, year), new IntWritable(countFirst));
+                        context.write(new WordAndCounter(firstWord, "*", year, countFirst), new IntWritable(countFirst));
                         return;
                     }
                     countCouple = Integer.parseInt(temp);
-                    context.write(new WordAndCounter(secondWord, firstWord, countFirst, year), new IntWritable(countCouple));
+                    context.write(new WordAndCounter(secondWord, firstWord, year, countFirst), new IntWritable(countCouple));
                 }
                 index++;
             }
@@ -60,18 +60,33 @@ public class MapReducer2 {
 
     public static class Reducer2
             extends Reducer<WordAndCounter, IntWritable, WordAndCounter, IntWritable> {
+        private static WordYearResultsQueue queue = new WordYearResultsQueue(20);
         private IntWritable result = new IntWritable();
         private Text word = new Text();
 
         public void reduce(WordAndCounter key, Iterable<IntWritable> values,
                            Context context
         ) throws IOException, InterruptedException {
+            if(key.getSecondWord().contains("*"))
+                return;
             int sum = 0;
             for (IntWritable val : values) {
                 sum += val.get();
             }
-            result.set(sum);
-            context.write(key, result);
+            int decade = key.getDecade();
+            String firstWord = key.getFirstWord();
+            String secondWord = key.getSecondWord();
+            queue.insert(new WordYearResult(secondWord, firstWord, decade, sum));
+        }
+
+        @Override
+        protected void cleanup(Context context) throws IOException, InterruptedException {
+            super.cleanup(context);
+            WordYearResult head = queue.remove();
+            while(head != null){
+                context.write(new WordAndCounter(head.word_1, head.word_2, head.decade, head.result), new IntWritable(head.result));
+                head = queue.remove();
+            }
         }
     }
 
