@@ -7,7 +7,7 @@ import java.io.IOException;
 class WordAndCounter implements WritableComparable<WordAndCounter> {
     String word_1;
     String word_2;
-    int rightword_counter;
+    double rightword_counter;
     int decade;
 
     WordAndCounter() {
@@ -17,7 +17,7 @@ class WordAndCounter implements WritableComparable<WordAndCounter> {
         this.rightword_counter = -1;
     }
 
-    public WordAndCounter(String word_1, String word_2, int decade, int rightword_counter) {
+    public WordAndCounter(String word_1, String word_2, int decade, double rightword_counter) {
         this.word_1 = word_1;
         this.word_2 = word_2;
         this.rightword_counter = rightword_counter;
@@ -41,7 +41,7 @@ class WordAndCounter implements WritableComparable<WordAndCounter> {
     public void write(DataOutput out) throws IOException {
         out.writeChars(word_1 + "\n");
         out.writeChars(word_2 + "\n");
-        out.writeInt(rightword_counter);
+        out.writeDouble(rightword_counter);
         out.writeInt(decade);
     }
 
@@ -49,7 +49,7 @@ class WordAndCounter implements WritableComparable<WordAndCounter> {
     public void readFields(DataInput in) throws IOException {
         this.word_1 = in.readLine();
         this.word_2 = in.readLine();
-        this.rightword_counter = in.readInt();
+        this.rightword_counter = in.readDouble();
         this.decade = in.readInt();
     }
 
@@ -69,5 +69,5 @@ class WordAndCounter implements WritableComparable<WordAndCounter> {
         return decade;
     }
 
-    public int getRightword_counter() { return rightword_counter; }
+    public double getRightword_counter() { return rightword_counter; }
 }

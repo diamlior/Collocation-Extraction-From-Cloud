@@ -31,11 +31,11 @@ public class Main {
         job2.setJarByClass(MapReducer2.class);
         job2.setMapperClass(MapReducer2.Mapper2.class);
         job2.setMapOutputKeyClass(WordAndCounter.class);
-        job2.setMapOutputValueClass(IntWritable.class);
+        job2.setMapOutputValueClass(DoubleWritable.class);
         job2.setCombinerClass(MapReducer2.Reducer2.class);
         job2.setReducerClass(MapReducer2.Reducer2.class);
         job2.setOutputKeyClass(WordAndCounter.class);
-        job2.setOutputValueClass(IntWritable.class);
+        job2.setOutputValueClass(DoubleWritable.class);
         FileInputFormat.addInputPath(job2, new Path(args[1]));
         FileOutputFormat.setOutputPath(job2, new Path("output_final"));
 
