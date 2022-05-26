@@ -8,7 +8,7 @@ class WordYearResult implements WritableComparable<WordYearResult> {
     String word_1;
     String word_2;
     int decade;
-    int result;
+    double result;
 
     WordYearResult() {
         this.word_1 = "";
@@ -17,7 +17,7 @@ class WordYearResult implements WritableComparable<WordYearResult> {
         this.result = -1;
     }
 
-    public WordYearResult(String word_1, String word_2, int decade, int result) {
+    public WordYearResult(String word_1, String word_2, int decade, double result) {
         this.word_1 = word_1;
         this.word_2 = word_2;
         this.result = result;
@@ -28,14 +28,14 @@ class WordYearResult implements WritableComparable<WordYearResult> {
     public int compareTo(WordYearResult other) {
         if(other == null)
             return 1;
-        return result - other.result;
+        return (int) (result - other.result);
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
         out.writeChars(word_1 + "\n");
         out.writeChars(word_2 + "\n");
-        out.writeInt(result);
+        out.writeDouble(result);
         out.writeInt(decade);
     }
 
@@ -43,12 +43,12 @@ class WordYearResult implements WritableComparable<WordYearResult> {
     public void readFields(DataInput in) throws IOException {
         this.word_1 = in.readLine();
         this.word_2 = in.readLine();
-        this.result = in.readInt();
+        this.result = in.readDouble();
         this.decade = in.readInt();
     }
 
     public String toString(){
-        return String.format("%s\t%s\t%d\t%d", this.word_1, this.word_2, this.decade, this.result);
+        return String.format("%s\t%s\t%d\t%,.2f", this.word_1, this.word_2, this.decade, this.result);
     }
 
     public String getFirstWord() {
@@ -63,5 +63,5 @@ class WordYearResult implements WritableComparable<WordYearResult> {
         return decade;
     }
 
-    public int getResult() { return result; }
+    public double getResult() { return result; }
 }

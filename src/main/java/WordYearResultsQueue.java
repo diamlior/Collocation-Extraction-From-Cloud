@@ -1,5 +1,9 @@
 public class WordYearResultsQueue {
 
+    /*
+    This priority queue will be used to hold the top-100 collocations for each decade.
+    This queue remains sorted at all time.
+     */
     private class WordYearResultsNode{
         public WordYearResult data;
         public WordYearResultsNode next;
