@@ -26,7 +26,7 @@ public class MapReducer2 {
 
             while (st.hasMoreTokens()) {
                 temp = st.nextToken();
-                temp = temp.replaceAll("\\u0000", "");
+                temp = temp.replaceAll("[^\\w*]", "");
                 if (index == 0){
                     firstWord = temp;
                 }

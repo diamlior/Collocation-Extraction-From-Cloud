@@ -23,7 +23,7 @@ public class MapReducer1 {
             String temp = "";
             while (st.hasMoreTokens()) {
                 temp = st.nextToken();
-                temp = temp.replaceAll("\\u0000", "");
+                temp = temp.replaceAll("[^\\w]", "");
                 if(index == 0){
                     if (!temp.matches("[a-zA-Z]+")){
                         return;
