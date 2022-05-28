@@ -62,20 +62,24 @@ public class MapReducer2 {
         // <Word2, *, CounterOf1, decade> Counter
         // <Word1, Word2, CounterOf1, decade> <Word1Word2Counter>
         private static HashMap<Integer, WordYearResultsQueue> queueMap = new HashMap<>();
-        WordYearResultsQueue queue;
+        WordYearResultsQueue queue = new WordYearResultsQueue(100);
         private DoubleWritable result = new DoubleWritable();
         private Text word = new Text();
         private int leftCounter = -1;
-        private int N = 500000;
-        public double getLogValue(int sumOfBoth, int sumOfLeft, int sumOfRight, int total){
+        private int N = 500000; // TODO: Find N
+        private int current_decade = -1;
+
+        public double getLogValue(int sumOfBoth, int sumOfLeft, int sumOfRight, int total) {
             int c12 = sumOfBoth;
             int c1 = sumOfLeft;
-
-            c1++; // TODO: Remove this line! It is only meant for testing!!
-
             int c2 = sumOfRight;
+
+            c1++; // TODO: remove this line
+
+            // If a word exists only with the other one, it's best collocation
             if(c1 == c12 || c2 == c12)
-                return 1;
+                return Integer.MIN_VALUE / 2;
+
             int N = total;
             double p = (double) c2 / N;
             double p1 = (double) c12 / c1;
@@ -87,7 +91,7 @@ public class MapReducer2 {
                     getLValue(c2 - c12, N - c1, p2);
         }
 
-        public double getLValue(double k, double n, double x){
+        public double getLValue(double k, double n, double x) {
             return k * Math.log(x) + (n - k) * Math.log(1 - x);
         }
 
@@ -95,12 +99,11 @@ public class MapReducer2 {
                            Context context
         ) throws IOException, InterruptedException {
 
-            if(key.getSecondWord().contains("*")) {
+            if (key.getSecondWord().contains("*")) {
                 try {
                     leftCounter = (int) key.getRightword_counter();
                     return;
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     leftCounter = 0;
                     return;
                 }
@@ -114,25 +117,34 @@ public class MapReducer2 {
             int decade = key.getDecade();
             String firstWord = key.getFirstWord();
             String secondWord = key.getSecondWord();
-            queue = queueMap.get(decade);
-            if(queue == null){
-                queue = new WordYearResultsQueue(10);
-                queueMap.put(decade, queue);
+
+            // Check if decade wasn't initialized yet
+            if (current_decade == -1)
+                current_decade = decade;
+
+            // If it's a new decade, flush the queue of the previous decade
+            if (current_decade != decade) {
+                WordYearResult head = queue.remove();
+                while (head != null) {
+                    context.write(new WordAndCounter(head.word_1, head.word_2, head.decade, leftCounter), new DoubleWritable(head.result));
+                    head = queue.remove();
+                }
             }
+
+            // Add value to queue
             queue.insert(new WordYearResult(secondWord, firstWord, decade, sum));
         }
 
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException {
             super.cleanup(context);
+
+            // Flush the queue of the last decade
             WordYearResult head;
-            for(Integer i : queueMap.keySet()){
-                queue = queueMap.get(i);
+            head = queue.remove();
+            while(head != null){
+                context.write(new WordAndCounter(head.word_1, head.word_2, head.decade, leftCounter), new DoubleWritable(head.result));
                 head = queue.remove();
-                while(head != null){
-                    context.write(new WordAndCounter(head.word_1, head.word_2, head.decade, leftCounter), new DoubleWritable(head.result));
-                    head = queue.remove();
-                }
             }
         }
     }
