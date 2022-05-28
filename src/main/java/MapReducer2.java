@@ -1,8 +1,10 @@
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 
 public class MapReducer2 {
@@ -56,10 +58,14 @@ public class MapReducer2 {
 
     public static class Reducer2
             extends Reducer<WordAndCounter, DoubleWritable, WordAndCounter, DoubleWritable> {
-        private static WordYearResultsQueue queue = new WordYearResultsQueue(20);
+
+        // <Word2, *, CounterOf1, decade> Counter
+        // <Word1, Word2, CounterOf1, decade> <Word1Word2Counter>
+        private static HashMap<Integer, WordYearResultsQueue> queueMap = new HashMap<>();
+        WordYearResultsQueue queue;
         private DoubleWritable result = new DoubleWritable();
         private Text word = new Text();
-        private int leftCounter = 0;
+        private int leftCounter = -1;
         private int N = 500000;
         public double getLogValue(int sumOfBoth, int sumOfLeft, int sumOfRight, int total){
             int c12 = sumOfBoth;
@@ -99,6 +105,7 @@ public class MapReducer2 {
                     return;
                 }
             }
+
             int sumOfBoth = 0;
             for (DoubleWritable val : values) {
                 sumOfBoth += val.get();
@@ -107,18 +114,33 @@ public class MapReducer2 {
             int decade = key.getDecade();
             String firstWord = key.getFirstWord();
             String secondWord = key.getSecondWord();
+            queue = queueMap.get(decade);
+            if(queue == null){
+                queue = new WordYearResultsQueue(10);
+                queueMap.put(decade, queue);
+            }
             queue.insert(new WordYearResult(secondWord, firstWord, decade, sum));
         }
 
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException {
             super.cleanup(context);
-            WordYearResult head = queue.remove();
-            while(head != null){
-                context.write(new WordAndCounter(head.word_1, head.word_2, head.decade, leftCounter), new DoubleWritable(head.result));
+            WordYearResult head;
+            for(Integer i : queueMap.keySet()){
+                queue = queueMap.get(i);
                 head = queue.remove();
+                while(head != null){
+                    context.write(new WordAndCounter(head.word_1, head.word_2, head.decade, leftCounter), new DoubleWritable(head.result));
+                    head = queue.remove();
+                }
             }
         }
     }
 
+    public static class DecadePartitioner2 extends Partitioner<WordAndCounter, DoubleWritable> {
+        @Override
+        public int getPartition(WordAndCounter key, DoubleWritable value, int i) {
+            return key.getDecade()/10 % i;
+        }
+    }
 }

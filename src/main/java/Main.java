@@ -32,7 +32,8 @@ public class Main {
         job2.setMapperClass(MapReducer2.Mapper2.class);
         job2.setMapOutputKeyClass(WordAndCounter.class);
         job2.setMapOutputValueClass(DoubleWritable.class);
-        job2.setCombinerClass(MapReducer2.Reducer2.class);
+        job2.setNumReduceTasks(7);
+        job2.setPartitionerClass(MapReducer2.DecadePartitioner2.class);
         job2.setReducerClass(MapReducer2.Reducer2.class);
         job2.setOutputKeyClass(WordAndCounter.class);
         job2.setOutputValueClass(DoubleWritable.class);

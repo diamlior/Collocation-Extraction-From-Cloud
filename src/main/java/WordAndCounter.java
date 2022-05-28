@@ -5,6 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 class WordAndCounter implements WritableComparable<WordAndCounter> {
+
     String word_1;
     String word_2;
     double rightword_counter;

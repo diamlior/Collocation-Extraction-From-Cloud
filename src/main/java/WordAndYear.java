@@ -18,7 +18,7 @@ class WordAndYear implements WritableComparable<WordAndYear> {
     WordAndYear(String word_1, String word_2, int year) {
         this.word_1 = word_1;
         this.word_2 = word_2;
-        this.decade = year - (year%100);
+        this.decade = year - (year%10);
     }
 
     public void readFields(DataInput in) throws IOException {
