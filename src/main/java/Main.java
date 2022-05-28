@@ -12,21 +12,18 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.S3Exception;
 
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 
 public class Main {
     public static void main(String[] args) throws Exception {
+
         Configuration conf = new Configuration();
         String stopWords = "";
         String stopWordsPath = "-stopwords.txt";
-        String inputPath = "s3://datasets.elasticmapreduce/ngrams/books/20090715/";
+        String inputPath = "s3://hadoop-emr-diamlior/input"; // TODO: change this path
+        String bucketPath = "s3://hadoop-emr-diamlior/";
         Region region = Region.US_EAST_1;
         S3Client s3 = S3Client.builder()
                 .region(region)
@@ -34,10 +31,10 @@ public class Main {
 
         if (args[0].equals("heb")){
             stopWordsPath = "heb" + stopWordsPath;
-            inputPath = inputPath + "heb-all/2gram/data";
+//            inputPath = inputPath + "heb-all/2gram/data";
         } else {
             stopWordsPath = "eng" + stopWordsPath;
-            inputPath = inputPath + "eng-us-all/2gram/data";
+//            inputPath = inputPath + "eng-us-all/2gram/data";
         }
 
         try {
@@ -49,9 +46,8 @@ public class Main {
             ResponseBytes<GetObjectResponse> objectBytes = s3.getObjectAsBytes(objectRequest);
             byte[] data = objectBytes.asByteArray();
             stopWords = new String(data, StandardCharsets.UTF_8);
-        } catch (S3Exception e) {
-            System.err.println(e.awsErrorDetails().errorMessage());
-            System.exit(1);
+        } catch (Exception e) {
+            System.out.println();
         }
 
         conf.set("stop.words", stopWords);
@@ -73,7 +69,7 @@ public class Main {
         job.setNumReduceTasks(32);
 
         FileInputFormat.addInputPath(job, new Path(inputPath));
-        FileOutputFormat.setOutputPath(job, new Path("output_1"));
+        FileOutputFormat.setOutputPath(job, new Path(bucketPath + "output_1"));
 
         Configuration conf2 = new Configuration();
         conf2.set("fs.hdfs.impl",
@@ -92,8 +88,8 @@ public class Main {
         job2.setReducerClass(MapReducer2.Reducer2.class);
         job2.setOutputKeyClass(WordAndCounter.class);
         job2.setOutputValueClass(DoubleWritable.class);
-        FileInputFormat.addInputPath(job2, new Path("output_1"));
-        FileOutputFormat.setOutputPath(job2, new Path("output_final"));
+        FileInputFormat.addInputPath(job2, new Path(bucketPath + "output_1"));
+        FileOutputFormat.setOutputPath(job2, new Path(bucketPath + "output_final"));
 
 
         ControlledJob jobOneControl = new ControlledJob(job.getConfiguration());
