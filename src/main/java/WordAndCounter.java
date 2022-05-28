@@ -40,16 +40,16 @@ class WordAndCounter implements WritableComparable<WordAndCounter> {
 
     @Override
     public void write(DataOutput out) throws IOException {
-        out.writeChars(word_1 + "\n");
-        out.writeChars(word_2 + "\n");
+        out.writeUTF(word_1);
+        out.writeUTF(word_2);
         out.writeDouble(rightword_counter);
         out.writeInt(decade);
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        this.word_1 = in.readLine();
-        this.word_2 = in.readLine();
+        this.word_1 = in.readUTF();
+        this.word_2 = in.readUTF();
         this.rightword_counter = in.readDouble();
         this.decade = in.readInt();
     }

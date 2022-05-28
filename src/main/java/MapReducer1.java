@@ -5,6 +5,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -21,7 +23,8 @@ public class MapReducer1 {
 
             stopWords = new HashSet<String>();
             for(String word : conf.get("stop.words").split("\n")) {
-                stopWords.add(word.replace("\r", ""));
+                word = word.replace("\r", "");
+                stopWords.add(word);
             }
         }
 
@@ -41,13 +44,13 @@ public class MapReducer1 {
                     if (!temp.matches("[a-zA-Z]+") || stopWords.contains(temp)){
                         return;
                     }
-                    firstWord = temp.toLowerCase();
+                    firstWord = temp;
                 }
                 if(index == 1){
                     if (!temp.matches("[a-zA-Z]+") || stopWords.contains(temp)){
                         return;
                     }
-                    secondWord = temp.toLowerCase();
+                    secondWord = temp;
                 }
                 if(index == 2){
                     try{

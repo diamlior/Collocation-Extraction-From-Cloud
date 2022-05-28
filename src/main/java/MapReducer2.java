@@ -4,6 +4,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
@@ -12,6 +14,7 @@ public class MapReducer2 {
     public static class Mapper2 extends Mapper<Object, Text, WordAndCounter, DoubleWritable>{
         String word = "";
         double countFirst = 0;
+        static private String star = new String(StandardCharsets.UTF_8.encode("*").array(), StandardCharsets.UTF_8);
 
         public void map(Object key, Text value, Context context
         ) throws IOException, InterruptedException {
@@ -26,7 +29,7 @@ public class MapReducer2 {
 
             while (st.hasMoreTokens()) {
                 temp = st.nextToken();
-                temp = temp.replaceAll("[^\\w*]", "");
+//                temp = temp.replaceAll("[^\\w*]", "");
                 if (index == 0){
                     firstWord = temp;
                 }

@@ -38,6 +38,8 @@ public class Main {
         job.setReducerClass(MapReducer1.IntSumReducer.class);
         job.setOutputKeyClass(WordAndYear.class);
         job.setOutputValueClass(IntWritable.class);
+//        job2.setPartitionerClass(MapReducer2.DecadePartitioner2.class);
+        job.setNumReduceTasks(32);
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
@@ -54,7 +56,7 @@ public class Main {
         job2.setMapperClass(MapReducer2.Mapper2.class);
         job2.setMapOutputKeyClass(WordAndCounter.class);
         job2.setMapOutputValueClass(DoubleWritable.class);
-        job2.setNumReduceTasks(7);
+        job2.setNumReduceTasks(32);
         job2.setPartitionerClass(MapReducer2.DecadePartitioner2.class);
         job2.setReducerClass(MapReducer2.Reducer2.class);
         job2.setOutputKeyClass(WordAndCounter.class);
