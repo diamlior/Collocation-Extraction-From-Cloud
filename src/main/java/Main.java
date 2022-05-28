@@ -7,6 +7,15 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.jobcontrol.ControlledJob;
 import org.apache.hadoop.mapreduce.lib.jobcontrol.JobControl;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
@@ -16,12 +25,30 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         String stopWords = "";
-        try (Stream<String> lines = Files.lines(Paths.get("eng-stopwords.txt"))) {
-            stopWords = lines.collect(Collectors.joining(System.lineSeparator()));
-        } catch (Exception e){
-            e.printStackTrace();
-            System.err.println("Could not create stop words.");
+        try {
+            Region region = Region.US_EAST_1;
+            S3Client s3 = S3Client.builder()
+                    .region(region)
+                    .build();
+            GetObjectRequest objectRequest = GetObjectRequest
+                    .builder()
+                    .key("eng-stopwords.txt")
+                    .bucket("collocation-ds")
+                    .build();
+            ResponseBytes<GetObjectResponse> objectBytes = s3.getObjectAsBytes(objectRequest);
+            byte[] data = objectBytes.asByteArray();
+            stopWords = new String(data, StandardCharsets.UTF_8);
+        } catch (S3Exception e) {
+            System.err.println(e.awsErrorDetails().errorMessage());
+            System.exit(1);
         }
+
+//        try (Stream<String> lines = Files.lines(Paths.get("eng-stopwords.txt"))) {
+//            stopWords = lines.collect(Collectors.joining(System.lineSeparator()));
+//        } catch (Exception e){
+//            e.printStackTrace();
+//            System.err.println("Could not create stop words.");
+//        }
         conf.set("stop.words", stopWords);
         conf.set("fs.hdfs.impl",
                 org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
@@ -34,11 +61,9 @@ public class Main {
         job.setMapperClass(MapReducer1.TokenizerMapper.class);
         job.setMapOutputKeyClass(WordAndYear.class);
         job.setMapOutputValueClass(IntWritable.class);
-        job.setCombinerClass(MapReducer1.IntSumReducer.class);
         job.setReducerClass(MapReducer1.IntSumReducer.class);
         job.setOutputKeyClass(WordAndYear.class);
         job.setOutputValueClass(IntWritable.class);
-//        job2.setPartitionerClass(MapReducer2.DecadePartitioner2.class);
         job.setNumReduceTasks(32);
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
