@@ -25,14 +25,25 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         String stopWords = "";
+        String stopWordsPath = "-stopwords.txt";
+        String inputPath = "s3://datasets.elasticmapreduce/ngrams/books/20090715/";
+        Region region = Region.US_EAST_1;
+        S3Client s3 = S3Client.builder()
+                .region(region)
+                .build();
+
+        if (args[0].equals("heb")){
+            stopWordsPath = "heb" + stopWordsPath;
+            inputPath = inputPath + "heb-all/2gram/data";
+        } else {
+            stopWordsPath = "eng" + stopWordsPath;
+            inputPath = inputPath + "eng-us-all/2gram/data";
+        }
+
         try {
-            Region region = Region.US_EAST_1;
-            S3Client s3 = S3Client.builder()
-                    .region(region)
-                    .build();
             GetObjectRequest objectRequest = GetObjectRequest
                     .builder()
-                    .key("eng-stopwords.txt")
+                    .key(stopWordsPath)
                     .bucket("collocation-ds")
                     .build();
             ResponseBytes<GetObjectResponse> objectBytes = s3.getObjectAsBytes(objectRequest);
@@ -43,12 +54,6 @@ public class Main {
             System.exit(1);
         }
 
-//        try (Stream<String> lines = Files.lines(Paths.get("eng-stopwords.txt"))) {
-//            stopWords = lines.collect(Collectors.joining(System.lineSeparator()));
-//        } catch (Exception e){
-//            e.printStackTrace();
-//            System.err.println("Could not create stop words.");
-//        }
         conf.set("stop.words", stopWords);
         conf.set("fs.hdfs.impl",
                 org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
@@ -67,8 +72,8 @@ public class Main {
         job.setOutputValueClass(IntWritable.class);
         job.setNumReduceTasks(32);
 
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        FileInputFormat.addInputPath(job, new Path(inputPath));
+        FileOutputFormat.setOutputPath(job, new Path("output_1"));
 
         Configuration conf2 = new Configuration();
         conf2.set("fs.hdfs.impl",
@@ -87,8 +92,8 @@ public class Main {
         job2.setReducerClass(MapReducer2.Reducer2.class);
         job2.setOutputKeyClass(WordAndCounter.class);
         job2.setOutputValueClass(DoubleWritable.class);
-        FileInputFormat.addInputPath(job2, new Path(args[1]));
-        FileOutputFormat.setOutputPath(job2, new Path(args[1] + "_final"));
+        FileInputFormat.addInputPath(job2, new Path("output_1"));
+        FileOutputFormat.setOutputPath(job2, new Path("output_final"));
 
 
         ControlledJob jobOneControl = new ControlledJob(job.getConfiguration());
