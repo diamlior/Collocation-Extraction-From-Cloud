@@ -10,10 +10,23 @@ import org.apache.hadoop.mapreduce.lib.jobcontrol.JobControl;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 
 public class Main {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
+        String stopWords = "";
+        try (Stream<String> lines = Files.lines(Paths.get("eng-stopwords.txt"))) {
+            stopWords = lines.collect(Collectors.joining(System.lineSeparator()));
+        } catch (Exception e){
+            e.printStackTrace();
+            System.err.println("Could not create stop words.");
+        }
+        conf.set("stop.words", stopWords);
         Job job = Job.getInstance(conf, "word count");
         job.setJarByClass(MapReducer1.class);
         job.setMapperClass(MapReducer1.TokenizerMapper.class);
@@ -23,6 +36,7 @@ public class Main {
         job.setReducerClass(MapReducer1.IntSumReducer.class);
         job.setOutputKeyClass(WordAndYear.class);
         job.setOutputValueClass(IntWritable.class);
+
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
 

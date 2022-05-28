@@ -1,16 +1,29 @@
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 public class MapReducer1 {
     public static class TokenizerMapper
             extends Mapper<Object, Text, WordAndYear, IntWritable> {
 
+        private Set<String> stopWords;
         private final static IntWritable one = new IntWritable(1);
+
+        protected void setup(Context context) throws IOException, InterruptedException {
+            Configuration conf = context.getConfiguration();
+
+            stopWords = new HashSet<String>();
+            for(String word : conf.get("stop.words").split("\n")) {
+                stopWords.add(word.replace("\r", ""));
+            }
+        }
 
         public void map(Object key, Text value, Context context
         ) throws IOException, InterruptedException {
@@ -25,16 +38,16 @@ public class MapReducer1 {
                 temp = st.nextToken();
                 temp = temp.replaceAll("[^\\w]", "");
                 if(index == 0){
-                    if (!temp.matches("[a-zA-Z]+")){
+                    if (!temp.matches("[a-zA-Z]+") || stopWords.contains(temp)){
                         return;
                     }
-                    firstWord = temp;
+                    firstWord = temp.toLowerCase();
                 }
                 if(index == 1){
-                    if (!temp.matches("[a-zA-Z]+")){
+                    if (!temp.matches("[a-zA-Z]+") || stopWords.contains(temp)){
                         return;
                     }
-                    secondWord = temp;
+                    secondWord = temp.toLowerCase();
                 }
                 if(index == 2){
                     try{
