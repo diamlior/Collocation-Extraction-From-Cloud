@@ -60,6 +60,7 @@ public class Main {
         job.setJarByClass(MapReducer1.class);
         job.setMapperClass(MapReducer1.TokenizerMapper.class);
         job.setMapOutputKeyClass(WordAndYear.class);
+        job.setPartitionerClass(MapReducer1.DecadePartitioner1.class);
         job.setMapOutputValueClass(IntWritable.class);
         job.setReducerClass(MapReducer1.IntSumReducer.class);
         job.setOutputKeyClass(WordAndYear.class);
