@@ -33,12 +33,12 @@ public class Main {
         job.setJarByClass(MapReducer1.class);
         job.setMapperClass(MapReducer1.TokenizerMapper.class);
         job.setMapOutputKeyClass(WordAndYear.class);
+        job.setPartitionerClass(MapReducer1.DecadePartitioner1.class);
         job.setMapOutputValueClass(IntWritable.class);
         job.setCombinerClass(MapReducer1.IntSumReducer.class);
         job.setReducerClass(MapReducer1.IntSumReducer.class);
         job.setOutputKeyClass(WordAndYear.class);
         job.setOutputValueClass(IntWritable.class);
-//        job2.setPartitionerClass(MapReducer2.DecadePartitioner2.class);
         job.setNumReduceTasks(32);
 
         FileInputFormat.addInputPath(job, new Path(args[0]));

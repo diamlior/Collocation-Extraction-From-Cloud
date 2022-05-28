@@ -1,7 +1,9 @@
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
@@ -94,6 +96,13 @@ public class MapReducer1 {
             }
             result.set(sum);
             context.write(key, result);
+        }
+    }
+
+    public static class DecadePartitioner1 extends Partitioner<WordAndYear, IntWritable> {
+        @Override
+        public int getPartition(WordAndYear key, IntWritable value, int i) {
+            return key.getDecade()/10 % i;
         }
     }
 }
