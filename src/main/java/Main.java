@@ -10,11 +10,19 @@ import org.apache.hadoop.mapreduce.lib.jobcontrol.JobControl;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
+import javax.naming.ldap.Control;
+
 
 public class Main {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "word count");
+        conf.set("fs.hdfs.impl",
+                org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
+        );
+        conf.set("fs.file.impl",
+                org.apache.hadoop.fs.LocalFileSystem.class.getName()
+        );
+        Job job = Job.getInstance(conf, "Collocation-MapReduce1");
         job.setJarByClass(MapReducer1.class);
         job.setMapperClass(MapReducer1.TokenizerMapper.class);
         job.setMapOutputKeyClass(WordAndYear.class);
@@ -27,7 +35,13 @@ public class Main {
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
         Configuration conf2 = new Configuration();
-        Job job2 = Job.getInstance(conf2, "word count");
+        conf2.set("fs.hdfs.impl",
+                org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
+        );
+        conf2.set("fs.file.impl",
+                org.apache.hadoop.fs.LocalFileSystem.class.getName()
+        );
+        Job job2 = Job.getInstance(conf2, "Collocation-MapReduce2");
         job2.setJarByClass(MapReducer2.class);
         job2.setMapperClass(MapReducer2.Mapper2.class);
         job2.setMapOutputKeyClass(WordAndCounter.class);
@@ -38,7 +52,7 @@ public class Main {
         job2.setOutputKeyClass(WordAndCounter.class);
         job2.setOutputValueClass(DoubleWritable.class);
         FileInputFormat.addInputPath(job2, new Path(args[1]));
-        FileOutputFormat.setOutputPath(job2, new Path("output_final"));
+        FileOutputFormat.setOutputPath(job2, new Path(args[1] + "_final"));
 
 
         ControlledJob jobOneControl = new ControlledJob(job.getConfiguration());
@@ -59,6 +73,8 @@ public class Main {
             code = jobControl.getFailedJobList().size() == 0 ? 0 : 1;
             Thread.sleep(1000);
         }
+        for(ControlledJob j : jobControl.getFailedJobList())
+            System.out.println(j.getMessage());
         System.exit(code);
     }
 }
