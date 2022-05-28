@@ -29,7 +29,6 @@ public class MapReducer2 {
 
             while (st.hasMoreTokens()) {
                 temp = st.nextToken();
-//                temp = temp.replaceAll("[^\\w*]", "");
                 if (index == 0){
                     firstWord = temp;
                 }
@@ -69,7 +68,7 @@ public class MapReducer2 {
         private DoubleWritable result = new DoubleWritable();
         private Text word = new Text();
         private int leftCounter = -1;
-        private int N = 500000; // TODO: Find N
+        private int N = -1;
         private int current_decade = -1;
 
         public double getLogValue(int sumOfBoth, int sumOfLeft, int sumOfRight, int total) {
@@ -77,14 +76,14 @@ public class MapReducer2 {
             int c1 = sumOfLeft;
             int c2 = sumOfRight;
 
-            c1++; // TODO: remove this line
+            c1++;
 
             // If a word exists only with the other one, it's best collocation
             if(c1 == c12 || c2 == c12)
                 return Integer.MIN_VALUE / 2;
 
             int N = total;
-            double p = (double) c2 / N;
+            double p = (double) c2 / (N + 1);
             double p1 = (double) c12 / c1;
             double p2 = (double) (c2 - c12) / (N - c1);
 
@@ -103,13 +102,18 @@ public class MapReducer2 {
         ) throws IOException, InterruptedException {
 
             if (key.getSecondWord().contains("*")) {
-                try {
-                    leftCounter = (int) key.getRightword_counter();
-                    return;
-                } catch (Exception e) {
-                    leftCounter = 0;
+                if (key.getFirstWord().contains("*")){
+                    N = (int) key.getRightword_counter();
                     return;
                 }
+                else
+                    try {
+                        leftCounter = (int) key.getRightword_counter();
+                        return;
+                    } catch (Exception e) {
+                        leftCounter = 0;
+                        return;
+                    }
             }
 
             int sumOfBoth = 0;
@@ -117,6 +121,8 @@ public class MapReducer2 {
                 sumOfBoth += val.get();
             }
             double sum = -2 * getLogValue(sumOfBoth, (int) leftCounter, (int) key.getRightword_counter(), N);
+            if(sum != sum) // If sum is NAN
+                sum = Integer.MIN_VALUE;
             int decade = key.getDecade();
             String firstWord = key.getFirstWord();
             String secondWord = key.getSecondWord();

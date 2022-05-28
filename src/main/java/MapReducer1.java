@@ -71,6 +71,7 @@ public class MapReducer1 {
                     context.write(new WordAndYear(firstWord, secondWord, year), new IntWritable(count));
                     context.write(new WordAndYear(firstWord, "*", year), new IntWritable(count));
                     context.write(new WordAndYear(secondWord, "*", year), new IntWritable(count));
+                    context.write(new WordAndYear("*", "*", year), new IntWritable(count));
                 }
                 if(index > 3)
                     return;
