@@ -89,7 +89,19 @@ public class Main {
         job2.setOutputKeyClass(WordAndCounter.class);
         job2.setOutputValueClass(DoubleWritable.class);
         FileInputFormat.addInputPath(job2, new Path(bucketPath + "output_1"));
-        FileOutputFormat.setOutputPath(job2, new Path(bucketPath + "output_final"));
+        FileOutputFormat.setOutputPath(job2, new Path(bucketPath + "output_2"));
+
+
+        Job job3 = Job.getInstance(conf2, "Collocation-MapReduce3");
+        job3.setJarByClass(MapReducer3.class);
+        job3.setMapperClass(MapReducer3.Mapper3.class);
+        job3.setMapOutputKeyClass(WordYearFinalResult.class);
+        job3.setMapOutputValueClass(DoubleWritable.class);
+        job3.setReducerClass(MapReducer3.Reducer3.class);
+        job3.setOutputKeyClass(WordYearFinalResult.class);
+        job3.setOutputValueClass(DoubleWritable.class);
+        FileInputFormat.addInputPath(job3, new Path(bucketPath + "output_2"));
+        FileOutputFormat.setOutputPath(job3, new Path(bucketPath + "output_final"));
 
 
         ControlledJob jobOneControl = new ControlledJob(job.getConfiguration());
@@ -98,10 +110,15 @@ public class Main {
         ControlledJob jobTwoControl = new ControlledJob(job2.getConfiguration());
         jobTwoControl.setJob(job2);
 
+        ControlledJob jobThreeControl = new ControlledJob(job3.getConfiguration());
+        jobThreeControl.setJob(job3);
+
         JobControl jobControl = new JobControl("job-control");
         jobControl.addJob(jobOneControl);
         jobControl.addJob(jobTwoControl);
+        jobControl.addJob(jobThreeControl);
         jobTwoControl.addDependingJob(jobOneControl); // this condition makes the job-2 wait until job-1 is done
+        jobThreeControl.addDependingJob(jobTwoControl); // this condition makes the job-3 wait until job-2 is done
 
         Thread jobControlThread = new Thread(jobControl);
         jobControlThread.start();
