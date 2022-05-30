@@ -23,7 +23,7 @@ public class Main {
         String stopWords = "";
         String stopWordsPath = "-stopwords.txt";
         String inputPath = "s3://hadoop-emr-diamlior/input"; // TODO: change this path
-        String bucketPath = "s3://hadoop-emr-diamlior/";
+        String bucketPath = "s3://collocation-ds/";
         Region region = Region.US_EAST_1;
         S3Client s3 = S3Client.builder()
                 .region(region)
