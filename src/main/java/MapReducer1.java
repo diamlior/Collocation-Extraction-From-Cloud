@@ -41,15 +41,15 @@ public class MapReducer1 {
             String temp = "";
             while (st.hasMoreTokens()) {
                 temp = st.nextToken();
-                temp = temp.replaceAll("[^\\w]", "");
+                temp = temp.replaceAll("[^\\w'`]", "");
                 if(index == 0){
-                    if (!temp.matches("[a-zA-Z]+") || stopWords.contains(temp)){
+                    if (temp.length() < 2 || !temp.matches("[a-zA-Z'`0-9]+") || stopWords.contains(temp)){
                         return;
                     }
                     firstWord = temp;
                 }
                 if(index == 1){
-                    if (!temp.matches("[a-zA-Z]+") || stopWords.contains(temp)){
+                    if (temp.length() < 2 || !temp.matches("[a-zA-Z'`0-9]+") || stopWords.contains(temp)){
                         return;
                     }
                     secondWord = temp;
