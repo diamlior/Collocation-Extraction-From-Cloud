@@ -49,8 +49,8 @@ public class RunCollocation {
         try {
             HadoopJarStepConfig jarStepConfig = HadoopJarStepConfig.builder()
                     .jar(jar)
-                    .mainClass(myClass)
-                    .args("eng")
+//                    .mainClass(myClass)
+                    .args("heb")
                     .build();
 
 //            Application spark = Application.builder()

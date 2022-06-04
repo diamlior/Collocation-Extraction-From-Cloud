@@ -24,9 +24,10 @@ public class Main {
         String stopWords = "";
         String stopWordsPath = "-stopwords.txt";
 //        String inputPath = "s3://hadoop-emr-diamlior/input"; // TODO: change this path
-        String inputPath = "input";
-//        String bucketPath = "s3://collocation-ds/";
-        String bucketPath = "";
+//        String inputPath = "input";
+        String inputPath = "s3://datasets.elasticmapreduce/ngrams/books/20090715/";
+        String bucketPath = "s3://collocation-ds/";
+//        String bucketPath = "";
         Region region = Region.US_EAST_1;
         S3Client s3 = S3Client.builder()
                 .region(region)
@@ -34,10 +35,10 @@ public class Main {
 
         if (args[0].equals("heb")){
             stopWordsPath = "heb" + stopWordsPath;
-//            inputPath = inputPath + "heb-all/2gram/data";
+            inputPath = inputPath + "heb-all/2gram/data";
         } else {
             stopWordsPath = "eng" + stopWordsPath;
-//            inputPath = inputPath + "eng-us-all/2gram/data";
+            inputPath = inputPath + "eng-us-all/2gram/data";
         }
 
         try {
@@ -70,7 +71,7 @@ public class Main {
         job.setReducerClass(MapReducer1.IntSumReducer.class);
         job.setOutputKeyClass(WordAndYear.class);
         job.setOutputValueClass(IntWritable.class);
-//        job.setInputFormatClass(SequenceFileInputFormat.class);
+        job.setInputFormatClass(SequenceFileInputFormat.class);
         job.setNumReduceTasks(32);
 
         FileInputFormat.addInputPath(job, new Path(inputPath));
