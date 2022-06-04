@@ -22,8 +22,10 @@ public class Main {
         Configuration conf = new Configuration();
         String stopWords = "";
         String stopWordsPath = "-stopwords.txt";
-        String inputPath = "s3://hadoop-emr-diamlior/input"; // TODO: change this path
-        String bucketPath = "s3://collocation-ds/";
+//        String inputPath = "s3://hadoop-emr-diamlior/input"; // TODO: change this path
+        String inputPath = "input";
+//        String bucketPath = "s3://collocation-ds/";
+        String bucketPath = "";
         Region region = Region.US_EAST_1;
         S3Client s3 = S3Client.builder()
                 .region(region)
@@ -51,6 +53,7 @@ public class Main {
         }
 
         conf.set("stop.words", stopWords);
+        conf.set("lang", args[0]);
         conf.set("fs.hdfs.impl",
                 org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
         );
@@ -69,7 +72,7 @@ public class Main {
         job.setNumReduceTasks(32);
 
         FileInputFormat.addInputPath(job, new Path(inputPath));
-        FileOutputFormat.setOutputPath(job, new Path(bucketPath + "output_1"));
+        FileOutputFormat.setOutputPath(job, new Path(bucketPath + args[0] + "output_1"));
 
         Configuration conf2 = new Configuration();
         conf2.set("fs.hdfs.impl",
@@ -88,8 +91,8 @@ public class Main {
         job2.setReducerClass(MapReducer2.Reducer2.class);
         job2.setOutputKeyClass(WordAndCounter.class);
         job2.setOutputValueClass(DoubleWritable.class);
-        FileInputFormat.addInputPath(job2, new Path(bucketPath + "output_1"));
-        FileOutputFormat.setOutputPath(job2, new Path(bucketPath + "output_2"));
+        FileInputFormat.addInputPath(job2, new Path(bucketPath+ args[0]  + "output_1"));
+        FileOutputFormat.setOutputPath(job2, new Path(bucketPath+ args[0]  + "output_2"));
 
 
         Job job3 = Job.getInstance(conf2, "Collocation-MapReduce3");
@@ -100,8 +103,8 @@ public class Main {
         job3.setReducerClass(MapReducer3.Reducer3.class);
         job3.setOutputKeyClass(WordYearFinalResult.class);
         job3.setOutputValueClass(DoubleWritable.class);
-        FileInputFormat.addInputPath(job3, new Path(bucketPath + "output_2"));
-        FileOutputFormat.setOutputPath(job3, new Path(bucketPath + "output_final"));
+        FileInputFormat.addInputPath(job3, new Path(bucketPath + args[0] + "output_2"));
+        FileOutputFormat.setOutputPath(job3, new Path(bucketPath + args[0] + "output_final"));
 
 
         ControlledJob jobOneControl = new ControlledJob(job.getConfiguration());

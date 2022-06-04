@@ -17,16 +17,31 @@ public class MapReducer1 {
     public static class TokenizerMapper
             extends Mapper<Object, Text, WordAndYear, IntWritable> {
 
-        private Set<String> stopWords;
+        private Set<String> stopWords = new HashSet<>();
+        private String lang = "";
+        private String regx = "";
         private final static IntWritable one = new IntWritable(1);
 
         protected void setup(Context context) throws IOException, InterruptedException {
             Configuration conf = context.getConfiguration();
 
-            stopWords = new HashSet<String>();
-            for(String word : conf.get("stop.words").split("\n")) {
-                word = word.replace("\r", "");
-                stopWords.add(word);
+            try {
+                lang = conf.get("lang");
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            if (lang.equals("heb")){
+                regx = "[\\u0590-\\u05fe]+";
+            } else {
+                lang = "[a-zA-Z]+";
+            }
+            try {
+                for (String word : conf.get("stop.words").split("\n")) {
+                    word = word.replace("\r", "");
+                    stopWords.add(word);
+                }
+            } catch (Exception e){
+                e.printStackTrace();
             }
         }
 
@@ -41,15 +56,15 @@ public class MapReducer1 {
             String temp = "";
             while (st.hasMoreTokens()) {
                 temp = st.nextToken();
-                temp = temp.replaceAll("[^\\w'`]", "");
+//                temp = temp.replaceAll("[^\\w]", "");
                 if(index == 0){
-                    if (temp.length() < 2 || !temp.matches("[a-zA-Z'`0-9]+") || stopWords.contains(temp)){
+                    if (temp.length() < 2 || !temp.matches(this.regx) || stopWords.contains(temp)){
                         return;
                     }
                     firstWord = temp;
                 }
                 if(index == 1){
-                    if (temp.length() < 2 || !temp.matches("[a-zA-Z'`0-9]+") || stopWords.contains(temp)){
+                    if (temp.length() < 2 || !temp.matches(this.regx) || stopWords.contains(temp)){
                         return;
                     }
                     secondWord = temp;
@@ -59,14 +74,14 @@ public class MapReducer1 {
                         year = Integer.parseInt(temp);
                     }
                     catch (Exception e){
-                        continue;
+                        return;
                     }
                 }
                 if(index == 3){
                     try {
                         count = Integer.parseInt(temp);
                     } catch (Exception e){
-                        continue;
+                        return;
                     }
                     context.write(new WordAndYear(firstWord, secondWord, year), new IntWritable(count));
                     context.write(new WordAndYear(firstWord, "*", year), new IntWritable(count));
