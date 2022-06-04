@@ -33,7 +33,7 @@ public class MapReducer1 {
             if (lang.equals("heb")){
                 regx = "[\\u0590-\\u05fe]+";
             } else {
-                lang = "[a-zA-Z]+";
+                regx = "[a-zA-Z]+";
             }
             try {
                 for (String word : conf.get("stop.words").split("\n")) {
@@ -56,7 +56,9 @@ public class MapReducer1 {
             String temp = "";
             while (st.hasMoreTokens()) {
                 temp = st.nextToken();
-//                temp = temp.replaceAll("[^\\w]", "");
+                if (this.lang.equals("eng")) {
+                    temp = temp.replaceAll("[\\0000]", "");
+                }
                 if(index == 0){
                     if (temp.length() < 2 || !temp.matches(this.regx) || stopWords.contains(temp)){
                         return;

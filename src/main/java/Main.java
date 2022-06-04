@@ -4,6 +4,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.jobcontrol.ControlledJob;
 import org.apache.hadoop.mapreduce.lib.jobcontrol.JobControl;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -69,6 +70,7 @@ public class Main {
         job.setReducerClass(MapReducer1.IntSumReducer.class);
         job.setOutputKeyClass(WordAndYear.class);
         job.setOutputValueClass(IntWritable.class);
+//        job.setInputFormatClass(SequenceFileInputFormat.class);
         job.setNumReduceTasks(32);
 
         FileInputFormat.addInputPath(job, new Path(inputPath));
