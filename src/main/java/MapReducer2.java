@@ -138,6 +138,7 @@ public class MapReducer2 {
                     context.write(new WordAndCounter(head.word_1, head.word_2, head.decade, leftCounter), new DoubleWritable(head.result));
                     head = queue.remove();
                 }
+                current_decade = decade;
             }
 
             // Add value to queue

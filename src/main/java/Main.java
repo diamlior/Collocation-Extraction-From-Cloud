@@ -23,11 +23,8 @@ public class Main {
         Configuration conf = new Configuration();
         String stopWords = "";
         String stopWordsPath = "-stopwords.txt";
-//        String inputPath = "s3://hadoop-emr-diamlior/input"; // TODO: change this path
-//        String inputPath = "input";
         String inputPath = "s3://datasets.elasticmapreduce/ngrams/books/20090715/";
         String bucketPath = "s3://collocation-ds/";
-//        String bucketPath = "";
         Region region = Region.US_EAST_1;
         S3Client s3 = S3Client.builder()
                 .region(region)
@@ -106,6 +103,7 @@ public class Main {
         job3.setReducerClass(MapReducer3.Reducer3.class);
         job3.setOutputKeyClass(WordYearFinalResult.class);
         job3.setOutputValueClass(DoubleWritable.class);
+        job3.setNumReduceTasks(1);
         FileInputFormat.addInputPath(job3, new Path(bucketPath + args[0] + "output_2"));
         FileOutputFormat.setOutputPath(job3, new Path(bucketPath + args[0] + "output_final"));
 
