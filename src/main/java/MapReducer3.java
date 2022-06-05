@@ -45,10 +45,6 @@ public class MapReducer3 {
         public void reduce(WordYearFinalResult key, Iterable<DoubleWritable> values,
                            Context context
         ) throws IOException, InterruptedException {
-            double sumOfBoth = 0;
-            for (DoubleWritable val : values) {
-                sumOfBoth += val.get();
-            }
             context.write(key, new DoubleWritable(key.getResult()));
         }
     }

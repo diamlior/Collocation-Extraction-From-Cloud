@@ -61,12 +61,7 @@ public class MapReducer2 {
     public static class Reducer2
             extends Reducer<WordAndCounter, DoubleWritable, WordAndCounter, DoubleWritable> {
 
-        // <Word2, *, CounterOf1, decade> Counter
-        // <Word1, Word2, CounterOf1, decade> <Word1Word2Counter>
-        private static HashMap<Integer, WordYearResultsQueue> queueMap = new HashMap<>();
-        WordYearResultsQueue queue = new WordYearResultsQueue(100);
-        private DoubleWritable result = new DoubleWritable();
-        private Text word = new Text();
+        private WordYearResultsQueue queue = new WordYearResultsQueue(100);
         private int leftCounter = -1;
         private int N = -1;
         private int current_decade = -1;
@@ -76,11 +71,8 @@ public class MapReducer2 {
             int c1 = sumOfLeft;
             int c2 = sumOfRight;
 
-            c1++;
-
-            // If a word exists only with the other one, it's best collocation
-            if(c1 == c12 || c2 == c12)
-                return Integer.MIN_VALUE / 2;
+            if (c1 < 4 || c2 < 4 || c1 == c12 || c2 == c12) // Ignore words that appeared less than 4 times or only part of the pair
+                return 0;
 
             int N = total;
             double p = (double) c2 / (N + 1);
@@ -122,7 +114,7 @@ public class MapReducer2 {
             }
             double sum = -2 * getLogValue(sumOfBoth, (int) leftCounter, (int) key.getRightword_counter(), N);
             if(sum != sum) // If sum is NAN
-                sum = Integer.MIN_VALUE;
+                sum = Integer.MAX_VALUE;
             int decade = key.getDecade();
             String firstWord = key.getFirstWord();
             String secondWord = key.getSecondWord();
