@@ -49,26 +49,8 @@ public class RunCollocation {
         try {
             HadoopJarStepConfig jarStepConfig = HadoopJarStepConfig.builder()
                     .jar(jar)
-//                    .mainClass(myClass)
                     .args("heb")
                     .build();
-
-//            Application spark = Application.builder()
-//                    .name("Spark")
-//                    .build();
-//
-//            Application hive = Application.builder()
-//                    .name("Hive")
-//                    .build();
-//
-//            Application zeppelin = Application.builder()
-//                    .name("Zeppelin")
-//                    .build();
-
-//            List<Application> apps = new ArrayList<Application>();
-////            apps.add(spark);
-////            apps.add(hive);
-//            apps.add(zeppelin);
 
             StepConfig enabledebugging = StepConfig.builder()
                     .name("Enable debugging")
@@ -77,10 +59,8 @@ public class RunCollocation {
                     .build();
 
             JobFlowInstancesConfig instancesConfig = JobFlowInstancesConfig.builder()
-//                    .ec2SubnetId("subnet-206a9c58")
-//                    .ec2KeyName("my-ec2")
                     .instanceCount(3)
-                    .keepJobFlowAliveWhenNoSteps(true)
+                    .keepJobFlowAliveWhenNoSteps(false)
                     .masterInstanceType("m4.large")
                     .slaveInstanceType("m4.large")
                     .build();
@@ -90,11 +70,11 @@ public class RunCollocation {
                     .name(name)
                     .releaseLabel("emr-5.20.0")
                     .steps(enabledebugging)
-//                    .applications(apps)
                     .logUri(logUri)
                     .serviceRole("EMR_DefaultRole")
                     .jobFlowRole("EMR_EC2_DefaultRole")
                     .instances(instancesConfig)
+
                     .build();
 
             RunJobFlowResponse response = emrClient.runJobFlow(jobFlowRequest);
