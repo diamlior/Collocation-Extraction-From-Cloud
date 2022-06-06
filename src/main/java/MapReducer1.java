@@ -1,26 +1,23 @@
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 
 public class MapReducer1 {
     public static class TokenizerMapper
-            extends Mapper<Object, Text, WordAndYear, IntWritable> {
+            extends Mapper<Object, Text, WordAndYear, DoubleWritable> {
 
         private Set<String> stopWords = new HashSet<>();
         private String lang = "";
         private String regx = "";
-        private final static IntWritable one = new IntWritable(1);
+        private final static DoubleWritable one = new DoubleWritable(1);
 
         protected void setup(Context context) throws IOException, InterruptedException {
             Configuration conf = context.getConfiguration();
@@ -50,7 +47,7 @@ public class MapReducer1 {
             StringTokenizer st = new StringTokenizer(value.toString());
             int index = 0;
             int year = -1;
-            int count = 0;
+            double count = 0;
             String firstWord = "";
             String secondWord = "";
             String temp = "";
@@ -82,14 +79,14 @@ public class MapReducer1 {
                 }
                 if(index == 3){
                     try {
-                        count = Integer.parseInt(temp);
+                        count = Double.parseDouble(temp);
                     } catch (Exception e){
                         return;
                     }
-                    context.write(new WordAndYear(firstWord, secondWord, year), new IntWritable(count));
-                    context.write(new WordAndYear(firstWord, "*", year), new IntWritable(count));
-                    context.write(new WordAndYear(secondWord, "*", year), new IntWritable(count));
-                    context.write(new WordAndYear("*", "*", year), new IntWritable(count));
+                    context.write(new WordAndYear(firstWord, secondWord, year), new DoubleWritable(count));
+                    context.write(new WordAndYear(firstWord, "*", year), new DoubleWritable(count));
+                    context.write(new WordAndYear(secondWord, "*", year), new DoubleWritable(count));
+                    context.write(new WordAndYear("*", "*", year), new DoubleWritable(count));
                 }
                 if(index > 3)
                     return;
@@ -102,15 +99,15 @@ public class MapReducer1 {
     }
 
     public static class IntSumReducer
-            extends Reducer<WordAndYear, IntWritable, WordAndYear, IntWritable> {
-        private IntWritable result = new IntWritable();
+            extends Reducer<WordAndYear, DoubleWritable, WordAndYear, DoubleWritable> {
+        private DoubleWritable result = new DoubleWritable();
         private Text word = new Text();
 
-        public void reduce(WordAndYear key, Iterable<IntWritable> values,
+        public void reduce(WordAndYear key, Iterable<DoubleWritable> values,
                            Context context
         ) throws IOException, InterruptedException {
-            int sum = 0;
-            for (IntWritable val : values) {
+            double sum = 0;
+            for (DoubleWritable val : values) {
                 sum += val.get();
             }
             result.set(sum);
@@ -118,9 +115,9 @@ public class MapReducer1 {
         }
     }
 
-    public static class DecadePartitioner1 extends Partitioner<WordAndYear, IntWritable> {
+    public static class DecadePartitioner1 extends Partitioner<WordAndYear, DoubleWritable> {
         @Override
-        public int getPartition(WordAndYear key, IntWritable value, int i) {
+        public int getPartition(WordAndYear key, DoubleWritable value, int i) {
             return key.getDecade()/10 % i;
         }
     }

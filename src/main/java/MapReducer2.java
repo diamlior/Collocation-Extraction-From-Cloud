@@ -14,14 +14,13 @@ public class MapReducer2 {
     public static class Mapper2 extends Mapper<Object, Text, WordAndCounter, DoubleWritable>{
         String word = "";
         double countFirst = 0;
-        static private String star = new String(StandardCharsets.UTF_8.encode("*").array(), StandardCharsets.UTF_8);
 
         public void map(Object key, Text value, Context context
         ) throws IOException, InterruptedException {
             StringTokenizer st = new StringTokenizer(value.toString());
             int index = 0;
             int year = -1;
-            int countCouple = 0;
+            double countCouple = 0;
             String firstWord = "";
             String secondWord = "";
             String temp = "";
@@ -46,11 +45,11 @@ public class MapReducer2 {
                 }
                 else if (index == 3) {
                     if (isStar){
-                        countFirst = (double) (Integer.parseInt(temp));
+                        countFirst = Double.parseDouble(temp);
                         context.write(new WordAndCounter(firstWord, "*", year, countFirst), new DoubleWritable(countFirst));
                         return;
                     }
-                    countCouple = Integer.parseInt(temp);
+                    countCouple = Double.parseDouble(temp);
                     context.write(new WordAndCounter(secondWord, firstWord, year, countFirst), new DoubleWritable(countCouple));
                 }
                 index++;
@@ -62,22 +61,22 @@ public class MapReducer2 {
             extends Reducer<WordAndCounter, DoubleWritable, WordAndCounter, DoubleWritable> {
 
         private WordYearResultsQueue queue = new WordYearResultsQueue(100);
-        private int leftCounter = -1;
-        private int N = -1;
-        private int current_decade = -1;
+        private double leftCounter = -1;
+        private double N = -1;
+        private double current_decade = -1;
 
-        public double getLogValue(int sumOfBoth, int sumOfLeft, int sumOfRight, int total) {
-            int c12 = sumOfBoth;
-            int c1 = sumOfLeft;
-            int c2 = sumOfRight;
+        public double getLogValue(double sumOfBoth, double sumOfLeft, double sumOfRight, double total) {
+            double c12 = sumOfBoth;
+            double c1 = sumOfLeft;
+            double c2 = sumOfRight;
 
             if (c1 < 4 || c2 < 4 || c1 == c12 || c2 == c12) // Ignore words that appeared less than 4 times or only part of the pair
                 return 0;
 
-            int N = total;
-            double p = (double) c2 / (N + 1);
-            double p1 = (double) c12 / c1;
-            double p2 = (double) (c2 - c12) / (N - c1);
+            double N = total;
+            double p = c2 / (N + 1);
+            double p1 = c12 / c1;
+            double p2 = (c2 - c12) / (N - c1);
 
             return getLValue(c12, c1, p) +
                     getLValue(c2 - c12, N - c1, p) -
@@ -95,12 +94,12 @@ public class MapReducer2 {
 
             if (key.getSecondWord().contains("*")) {
                 if (key.getFirstWord().contains("*")){
-                    N = (int) key.getRightword_counter();
+                    N = key.getRightword_counter();
                     return;
                 }
                 else
                     try {
-                        leftCounter = (int) key.getRightword_counter();
+                        leftCounter = key.getRightword_counter();
                         return;
                     } catch (Exception e) {
                         leftCounter = 0;
@@ -108,13 +107,13 @@ public class MapReducer2 {
                     }
             }
 
-            int sumOfBoth = 0;
+            double sumOfBoth = 0;
             for (DoubleWritable val : values) {
                 sumOfBoth += val.get();
             }
-            double sum = -2 * getLogValue(sumOfBoth, (int) leftCounter, (int) key.getRightword_counter(), N);
+            double sum = -2 * getLogValue(sumOfBoth, leftCounter, key.getRightword_counter(), N);
             if(sum != sum) // If sum is NAN
-                sum = Integer.MAX_VALUE;
+                sum = Integer.MIN_VALUE;
             int decade = key.getDecade();
             String firstWord = key.getFirstWord();
             String secondWord = key.getSecondWord();

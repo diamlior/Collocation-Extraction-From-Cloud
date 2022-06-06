@@ -1,7 +1,6 @@
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -64,10 +63,10 @@ public class Main {
         job.setMapperClass(MapReducer1.TokenizerMapper.class);
         job.setMapOutputKeyClass(WordAndYear.class);
         job.setPartitionerClass(MapReducer1.DecadePartitioner1.class);
-        job.setMapOutputValueClass(IntWritable.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
         job.setReducerClass(MapReducer1.IntSumReducer.class);
         job.setOutputKeyClass(WordAndYear.class);
-        job.setOutputValueClass(IntWritable.class);
+        job.setOutputValueClass(DoubleWritable.class);
         job.setInputFormatClass(SequenceFileInputFormat.class);
         job.setNumReduceTasks(32);
 
@@ -118,10 +117,10 @@ public class Main {
         jobThreeControl.setJob(job3);
 
         JobControl jobControl = new JobControl("job-control");
-//        jobControl.addJob(jobOneControl);
+        jobControl.addJob(jobOneControl);
         jobControl.addJob(jobTwoControl);
         jobControl.addJob(jobThreeControl);
-//        jobTwoControl.addDependingJob(jobOneControl); // this condition makes the job-2 wait until job-1 is done
+        jobTwoControl.addDependingJob(jobOneControl); // this condition makes the job-2 wait until job-1 is done
         jobThreeControl.addDependingJob(jobTwoControl); // this condition makes the job-3 wait until job-2 is done
 
         Thread jobControlThread = new Thread(jobControl);
