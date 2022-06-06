@@ -60,7 +60,8 @@ public class MapReducer1 {
                     temp = temp.replaceAll("[\\0000]", "");
                 }
                 if(index == 0){
-                    if (temp.length() < 2 || !temp.matches(this.regx) || stopWords.contains(temp)){
+                    if (temp.length() < 2 || !temp.matches(this.regx) || (this.lang.equals("eng") && stopWords.contains(temp.toLowerCase()))
+                        || (this.lang.equals("heb") && stopWords.contains(temp))){
                         return;
                     }
                     firstWord = temp;

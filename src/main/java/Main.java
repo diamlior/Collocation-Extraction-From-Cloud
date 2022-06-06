@@ -35,7 +35,7 @@ public class Main {
             inputPath = inputPath + "heb-all/2gram/data";
         } else {
             stopWordsPath = "eng" + stopWordsPath;
-            inputPath = inputPath + "eng-us-all/2gram/data";
+            inputPath = inputPath + "eng-1M/2gram/data";
         }
 
         try {
@@ -91,7 +91,7 @@ public class Main {
         job2.setReducerClass(MapReducer2.Reducer2.class);
         job2.setOutputKeyClass(WordAndCounter.class);
         job2.setOutputValueClass(DoubleWritable.class);
-        FileInputFormat.addInputPath(job2, new Path(bucketPath+ args[0]  + "output_1"));
+        FileInputFormat.addInputPath(job2, new Path("s3://thecoolbucketthatismine/input/"));
         FileOutputFormat.setOutputPath(job2, new Path(bucketPath+ args[0]  + "output_2"));
 
 
@@ -118,10 +118,10 @@ public class Main {
         jobThreeControl.setJob(job3);
 
         JobControl jobControl = new JobControl("job-control");
-        jobControl.addJob(jobOneControl);
+//        jobControl.addJob(jobOneControl);
         jobControl.addJob(jobTwoControl);
         jobControl.addJob(jobThreeControl);
-        jobTwoControl.addDependingJob(jobOneControl); // this condition makes the job-2 wait until job-1 is done
+//        jobTwoControl.addDependingJob(jobOneControl); // this condition makes the job-2 wait until job-1 is done
         jobThreeControl.addDependingJob(jobTwoControl); // this condition makes the job-3 wait until job-2 is done
 
         Thread jobControlThread = new Thread(jobControl);

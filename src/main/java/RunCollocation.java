@@ -49,7 +49,7 @@ public class RunCollocation {
         try {
             HadoopJarStepConfig jarStepConfig = HadoopJarStepConfig.builder()
                     .jar(jar)
-                    .args("heb")
+                    .args("eng")
                     .build();
 
             StepConfig enabledebugging = StepConfig.builder()
@@ -59,10 +59,10 @@ public class RunCollocation {
                     .build();
 
             JobFlowInstancesConfig instancesConfig = JobFlowInstancesConfig.builder()
-                    .instanceCount(3)
+                    .instanceCount(8)
                     .keepJobFlowAliveWhenNoSteps(false)
-                    .masterInstanceType("m4.large")
-                    .slaveInstanceType("m4.large")
+                    .masterInstanceType("m4.xlarge")
+                    .slaveInstanceType("m4.xlarge")
                     .build();
 
 
