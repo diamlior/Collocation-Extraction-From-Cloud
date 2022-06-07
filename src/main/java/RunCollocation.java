@@ -10,10 +10,16 @@ import java.util.List;
 
 public class RunCollocation {
     public static void main(String[] args) {
-
-        String jar = "s3://collocation-ds/Collocation-Extraction-From-Cloud.jar" ; // TODO INSERT JAR
+        if(args.length < 1)
+            System.out.println("Arguments should include a language (heb/eng)");
+        String lang;
+        if (args[0].equals("heb")){
+            lang = "heb";
+        } else {
+            lang = "eng";
+        }
+        String jar = "s3://collocation-ds/Collocation-Extraction-From-Cloud.jar" ;
         String name = "collocation-extraction" ;
-        String lang = "heb"; // Fill in heb / eng
         String logUri = "s3://collocation-ds/logger/" ;
         Region region = Region.US_EAST_1;
         EmrClient emrClient = EmrClient.builder()
