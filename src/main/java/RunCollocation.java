@@ -10,46 +10,32 @@ import java.util.List;
 
 public class RunCollocation {
     public static void main(String[] args) {
-        final String usage = "\n" +
-                "Usage: " +
-                "   <jar> <myClass> <keys> <logUri> <name>\n\n" +
-                "Where:\n" +
-                "   jar - A path to a JAR file run during the step. \n\n" +
-                "   myClass - The name of the main class in the specified Java file. \n\n" +
-                "   keys - The name of the Amazon EC2 key pair. \n\n" +
-                "   logUri - The Amazon S3 bucket where the logs are located (for example,  s3://<BucketName>/logs/). \n\n" +
-                "   name - The name of the job flow. \n\n" ;
-
-//        if (args.length != 5) {
-//            System.out.println(usage);
-//            System.exit(1);
-//        }
 
         String jar = "s3://collocation-ds/Collocation-Extraction-From-Cloud.jar" ; // TODO INSERT JAR
-        String myClass = "Main" ;
-        String logUri = "s3://collocation-ds/logger/" ;
         String name = "collocation-extraction" ;
+        String lang = "heb"; // Fill in heb / eng
+        String logUri = "s3://collocation-ds/logger/" ;
         Region region = Region.US_EAST_1;
         EmrClient emrClient = EmrClient.builder()
                 .region(region)
                 .credentialsProvider(ProfileCredentialsProvider.create("default"))
                 .build();
 
-        String jobFlowId = createAppCluster(emrClient, jar, myClass, logUri, name);
+        String jobFlowId = createAppCluster(emrClient, jar, lang, logUri, name);
         System.out.println("The job flow id is " +jobFlowId);
         emrClient.close();
     }
     // snippet-start:[emr.java2._create_cluster.main]
     public static String createAppCluster( EmrClient emrClient,
                                            String jar,
-                                           String myClass,
+                                           String lang,
                                            String logUri,
                                            String name) {
 
         try {
             HadoopJarStepConfig jarStepConfig = HadoopJarStepConfig.builder()
                     .jar(jar)
-                    .args("eng")
+                    .args(lang)
                     .build();
 
             StepConfig enabledebugging = StepConfig.builder()
